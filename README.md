@@ -7,7 +7,7 @@ You will need to have a json formatted output of your VM's details before deleti
 
 `azure vm show <resource_group> <vm_name> --json > vm.json`
 
-This script is also built to run of Python 3.5.x
+This script is also built to run off Python 3.5.x
 
 ## Usage
 
