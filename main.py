@@ -35,7 +35,7 @@ class AttachDisks():
             userName,
             userPass
             )
-            print('pass')
+            print('Authenticated Successfully.')
         except:
             print('Either your AD login/password is incorrect, or you are using an MFA. \n' +
             'MFA use with this script is not supported at this time')
@@ -51,27 +51,31 @@ class AttachDisks():
         """Parses the local .json file for previously attached disks"""
         with open(self.json_path) as fp:
             ingest = json.load(fp)
+            dd = []
             for disk in ingest['storageProfile']['dataDisks']:
-                result = compute_client.virtual_machines.create_or_update(
-                    self.rg_name,
-                    self.vm_name,
-                    VirtualMachine(
-                        location=ingest['location'],
-                        storage_profile=StorageProfile(
-                            data_disks=[DataDisk(
-                                lun=disk['lun'],
-                                caching=disk['caching'].lower(),
-                                create_option=DiskCreateOptionTypes.attach,
-                                name=disk['name'],
-                                vhd=VirtualHardDisk(
-                                    uri=disk['vhd']['uri']
-                                    )
-                                            )]
-                                        )
-                                    )
+                a_disk = DataDisk(
+                    lun=disk['lun'],
+                    caching=disk['caching'].lower(),
+                    create_option=DiskCreateOptionTypes.attach,
+                    name=disk['name'],
+                    vhd=VirtualHardDisk(
+                        uri=disk['vhd']['uri']
+                        )
                                 )
-                print('Attaching disk {0} with name {1}, waiting until complete...'.format(disk['lun'], disk['name']))
-                result.wait()
+                dd.append(a_disk)
+                print('Attaching data disk {0} with name {1}, waiting until complete...'.format(a_disk.lun, a_disk.name))
+
+        result = compute_client.virtual_machines.create_or_update(
+            self.rg_name,
+            self.vm_name,
+            VirtualMachine(
+                location=ingest['location'],
+                storage_profile=StorageProfile(
+                    data_disks=dd
+                                )
+                            )
+                        )
+        result.wait()
         print('All disks should be attached now.')
 
 my_disks = AttachDisks()
